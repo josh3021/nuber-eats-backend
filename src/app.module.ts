@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { object, string } from 'joi';
 import { CommonModule } from './common/common.module';
 import { matchEnvFile } from './config/dotenv';
+import { JwtModule } from './jwt/jwt.module';
 import { User } from './users/entities/user.entity';
 import { UsersModule } from './users/users.module';
 
@@ -23,6 +24,7 @@ import { UsersModule } from './users/users.module';
         DB_USERNAME: string().required(),
         DB_PASSWORD: string().required(),
         DB_NAME: string().required(),
+        PRIVATE_KEY: string().required(),
       }),
     }),
     GraphQLModule.forRoot({
@@ -39,8 +41,14 @@ import { UsersModule } from './users/users.module';
       synchronize: process.env.NODE_ENV !== 'prod',
       logging: process.env.NODE_ENV !== 'prod',
     }),
-    UsersModule,
     CommonModule,
+    UsersModule,
+    // Actually, you can just inject privateKey Object By Global Config Modules...
+    // And I Recommend the Global Configuration Way one,
+    // But, I will use this way, because it's for practice of making My Own Dynamic Module!
+    JwtModule.forRoot({
+      privateKey: process.env.PRIVATE_KEY,
+    }),
   ],
   controllers: [],
   providers: [],

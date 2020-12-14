@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CommonReturnType } from '../common/dtos/return-type.dto';
+import { JwtService } from '../jwt/jwt.service';
 import { CreateAccountInput } from './dtos/create-account.dto';
 import { LoginInput, LoginOutput } from './dtos/login.dto';
 import { User } from './entities/user.entity';
@@ -10,6 +11,7 @@ import { User } from './entities/user.entity';
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
+    private readonly jwtService: JwtService,
   ) {}
 
   async createAccount({
@@ -60,7 +62,7 @@ export class UsersService {
       }
       return {
         result: true,
-        token: 'thisistoken',
+        token: this.jwtService.sign({ userId: user.id }),
       };
     } catch (e) {
       return { result: false, error: `Could'nt login: ${e}` };
