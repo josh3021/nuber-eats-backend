@@ -6,7 +6,7 @@ enum EnvFile {
 
 export function matchEnvFile(rawEnvFile: string) {
   switch (EnvFile[rawEnvFile]) {
-    case EnvFile.dev:
+    case EnvFile.test:
       return '.env.test';
     case EnvFile.prod:
       return '.env';

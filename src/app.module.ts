@@ -19,7 +19,7 @@ import { UsersModule } from './users/users.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: matchEnvFile(process.env.ENV),
+      envFilePath: matchEnvFile(process.env.NODE_ENV),
       ignoreEnvFile: process.env.NODE_ENV === 'prod',
       validationSchema: object({
         NODE_ENV: string()
