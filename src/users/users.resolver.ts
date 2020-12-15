@@ -11,8 +11,8 @@ import { UsersService } from './users.service';
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
 
-  @Query(_returns => Boolean)
-  hi() {
+  @Query(() => Boolean)
+  me(): boolean {
     return true;
   }
 
