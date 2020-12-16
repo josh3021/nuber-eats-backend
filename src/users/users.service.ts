@@ -1,17 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeleteResult, Repository } from 'typeorm';
-import { CommonReturnType } from '../common/dtos/return-type.dto';
+import { Repository } from 'typeorm';
 import { JwtService } from '../jwt/jwt.service';
-import { CreateAccountInput } from './dtos/create-account.dto';
+import { CreateAccountInput, CreateAccountOutput } from './dtos/create-account.dto';
+import { DeleteAccountOutput } from './dtos/delete-account.dto';
 import { LoginInput, LoginOutput } from './dtos/login.dto';
-import { updateAccountInput } from './dtos/update-profile.dto';
+import { UpdateAccountInput, UpdateAccountOutput } from './dtos/update-profile.dto';
+import { UserProfileOutput } from './dtos/user-profile.dto';
+import { VerifyEmailOutput } from './dtos/verify-email.dto';
 import { User } from './entities/user.entity';
+import { Verification } from './entities/verification.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
+    @InjectRepository(Verification) private readonly verifications: Repository<Verification>,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -19,19 +23,22 @@ export class UsersService {
     email,
     password,
     role,
-  }: CreateAccountInput): Promise<CommonReturnType> {
+  }: CreateAccountInput): Promise<CreateAccountOutput> {
     try {
-      const exists = await this.users.findOne({
+      const existingUser = await this.users.findOne({
         email,
-      });
-      if (exists) {
+      }, {select: ['password']});
+      if (existingUser) {
         // make an error
         return {
           result: false,
           error: 'There is an user with that email already',
         };
       }
-      await this.users.save(this.users.create({ email, password, role }));
+      const user = await this.users.save(this.users.create({ email, password, role }));
+      await this.verifications.save(this.verifications.create({
+        user
+      }));
       return { result: true };
     } catch (e) {
       return { result: false, error: `Could'nt create user: ${e}` };
@@ -39,19 +46,43 @@ export class UsersService {
   }
 
   async updateAccount(id: number, {email, password}
-  : updateAccountInput): Promise<User> {
-    const user = await this.users.findOne({id});
-    if (email) {
-      user.email = email;
+  : UpdateAccountInput): Promise<UpdateAccountOutput> {
+    try {
+      const user = await this.users.findOne({id});
+      if (email) {
+        user.email = email;
+        user.verified = false;
+        await this.verifications.save(this.verifications.create({
+          user
+        }));
+      }
+      if (password) {
+        user.password = password;
+      }
+      await this.users.save(user)
+      return {
+        result: true
+      }
+    } catch (error) {
+      return {
+        result: false,
+        error
+      }
     }
-    if (password) {
-      user.password = password;
-    }
-    return this.users.save(user)
   }
 
-  async deleteAccount(id: number): Promise<DeleteResult> {
-    return await this.users.delete(id);
+  async deleteAccount(id: number): Promise<DeleteAccountOutput> {
+    try {
+      await this.users.delete(id);
+      return {
+        result: true
+      }
+    } catch (error) {
+      return {
+        result: false,
+        error
+      }
+    }
   } 
   /**
    *
@@ -62,7 +93,7 @@ export class UsersService {
    */
   async login({ email, password }: LoginInput): Promise<LoginOutput> {
     try {
-      const user = await this.users.findOne({ email });
+      const user = await this.users.findOne({ email }, {select: ['id', 'password']});
       if (!user) {
         return {
           result: false,
@@ -85,8 +116,39 @@ export class UsersService {
     }
   }
 
-  findById(id: number): Promise<User> {
-    return this.users.findOne({ id })
+  async findById(id: number): Promise<UserProfileOutput> {
+    try {
+      const user = await this.users.findOne({ id });
+      if (!user) {
+        throw Error('Cannot find User')
+      }
+      return {
+        result: true,
+        user
+      }
+    } catch (error) {
+      return {
+        result: false,
+        error
+      }
+    }
   }
 
+  async verifyEmail(code: string): Promise<VerifyEmailOutput> {
+    try {
+      const verification = await this.verifications.findOne({code}, {relations: ['user']});
+      if (verification) {
+        verification.user.verified = true;
+        await this.users.save(verification.user);
+        await this.verifications.delete(verification.id)
+        return {result: true};
+      }
+      throw new Error('Cannot find Verification')
+    } catch (error) {
+      return {
+        result: false,
+        error
+      }
+    }
+  }
 }
