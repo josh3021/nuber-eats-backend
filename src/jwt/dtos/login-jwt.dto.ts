@@ -1,3 +1,3 @@
 export interface LoginJwtPayload {
-  userId: number;
+  id: number;
 }

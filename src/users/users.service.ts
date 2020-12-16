@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { CommonReturnType } from '../common/dtos/return-type.dto';
 import { JwtService } from '../jwt/jwt.service';
 import { CreateAccountInput } from './dtos/create-account.dto';
 import { LoginInput, LoginOutput } from './dtos/login.dto';
+import { updateAccountInput } from './dtos/update-profile.dto';
 import { User } from './entities/user.entity';
 
 @Injectable()
@@ -37,6 +38,21 @@ export class UsersService {
     }
   }
 
+  async updateAccount(id: number, {email, password}
+  : updateAccountInput): Promise<User> {
+    const user = await this.users.findOne({id});
+    if (email) {
+      user.email = email;
+    }
+    if (password) {
+      user.password = password;
+    }
+    return this.users.save(user)
+  }
+
+  async deleteAccount(id: number): Promise<DeleteResult> {
+    return await this.users.delete(id);
+  } 
   /**
    *
    * @param {email, password}
@@ -62,10 +78,15 @@ export class UsersService {
       }
       return {
         result: true,
-        token: this.jwtService.sign({ userId: user.id }),
+        token: this.jwtService.sign({ id: user.id }),
       };
     } catch (e) {
       return { result: false, error: `Could'nt login: ${e}` };
     }
   }
+
+  findById(id: number): Promise<User> {
+    return this.users.findOne({ id })
+  }
+
 }

@@ -2,13 +2,13 @@ import {
   MiddlewareConsumer,
   Module,
   NestModule,
-  RequestMethod,
+  RequestMethod
 } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { object, string } from 'joi';
-import { CommonModule } from './common/common.module';
+import { AuthModule } from './auth/auth.module';
 import { matchEnvFile } from './config/dotenv';
 import { JwtMiddleware } from './jwt/jwt.middleware';
 import { JwtModule } from './jwt/jwt.module';
@@ -35,6 +35,7 @@ import { UsersModule } from './users/users.module';
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
+      context: ({req}) => ({user: req['user']})
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -47,7 +48,6 @@ import { UsersModule } from './users/users.module';
       synchronize: process.env.NODE_ENV !== 'prod',
       logging: process.env.NODE_ENV !== 'prod',
     }),
-    CommonModule,
     UsersModule,
     // Actually, you can just inject privateKey Object By Global Config Modules...
     // And I Recommend the Global Configuration Way one,
@@ -55,6 +55,7 @@ import { UsersModule } from './users/users.module';
     JwtModule.forRoot({
       privateKey: process.env.PRIVATE_KEY,
     }),
+    AuthModule,
   ],
   controllers: [],
   providers: [],
@@ -63,7 +64,7 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(JwtMiddleware).forRoutes({
       path: '/graphql',
-      method: RequestMethod.ALL,
+      method: RequestMethod.POST,
     });
   }
 }

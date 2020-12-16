@@ -14,8 +14,8 @@ export class JwtService {
    * @param payload
    * return signed JWT (payload must be JSON type)
    */
-  sign({ userId }: LoginJwtPayload): string {
-    return jwt.sign({ userId }, this.options.privateKey);
+  sign({ id }: LoginJwtPayload): string {
+    return jwt.sign({ id }, this.options.privateKey);
   }
 
   verify(token: string) {
