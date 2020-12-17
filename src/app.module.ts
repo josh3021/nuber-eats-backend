@@ -7,11 +7,12 @@ import {
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { object, string } from 'joi';
+import * as joi from 'joi';
 import { AuthModule } from './auth/auth.module';
 import { matchEnvFile } from './config/dotenv';
 import { JwtMiddleware } from './jwt/jwt.middleware';
 import { JwtModule } from './jwt/jwt.module';
+import { MailModule } from './mail/mail.module';
 import { User } from './users/entities/user.entity';
 import { Verification } from './users/entities/verification.entity';
 import { UsersModule } from './users/users.module';
@@ -22,16 +23,20 @@ import { UsersModule } from './users/users.module';
       isGlobal: true,
       envFilePath: matchEnvFile(process.env.NODE_ENV),
       ignoreEnvFile: process.env.NODE_ENV === 'prod',
-      validationSchema: object({
-        NODE_ENV: string()
+      validationSchema: joi.object({
+        NODE_ENV: joi.string()
           .valid('dev', 'test', 'prod')
           .required(),
-        DB_HOST: string().required(),
-        DB_PORT: string().required(),
-        DB_USERNAME: string().required(),
-        DB_PASSWORD: string().required(),
-        DB_NAME: string().required(),
-        PRIVATE_KEY: string().required(),
+        DB_HOST: joi.string().required(),
+        DB_PORT: joi.string().required(),
+        DB_USERNAME: joi.string().required(),
+        DB_PASSWORD: joi.string().required(),
+        DB_NAME: joi.string().required(),
+        PRIVATE_KEY: joi.string().required(),
+        MAILGUN_API_KEY: joi.string().required(),
+        MAILGUN_DOMAIN_NAME: joi.string().required(),
+        MAILGUN_FROM_EMAIL: joi.string().email().required(),
+        MAILGUN_EMAIL_VERIFY_TEMPLATE: joi.string().required()
       }),
     }),
     GraphQLModule.forRoot({
@@ -49,7 +54,6 @@ import { UsersModule } from './users/users.module';
       synchronize: process.env.NODE_ENV !== 'prod',
       logging: process.env.NODE_ENV !== 'prod',
     }),
-    UsersModule,
     // Actually, you can just inject privateKey Object By Global Config Modules...
     // And I Recommend the Global Configuration Way one,
     // But, I will use this way, because it's for practice of making My Own Dynamic Module!
@@ -57,6 +61,13 @@ import { UsersModule } from './users/users.module';
       privateKey: process.env.PRIVATE_KEY,
     }),
     AuthModule,
+    MailModule.forRoot({
+      apiKey: process.env.MAILGUN_API_KEY,
+      domain: process.env.MAILGUN_DOMAIN_NAME,
+      fromEmail: process.env.MAILGUN_FROM_EMAIL,
+      verifyTemplate: process.env.MAILGUN_EMAIL_VERIFY_TEMPLATE
+    }),
+    UsersModule,
   ],
   controllers: [],
   providers: [],
