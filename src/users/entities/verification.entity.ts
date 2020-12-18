@@ -1,9 +1,9 @@
-import { Field, InputType, ObjectType } from "@nestjs/graphql";
-import { IsString } from "class-validator";
-import { CoreEntity } from "src/common/entities/core.entity";
-import { BeforeInsert, Column, Entity, JoinColumn, OneToOne } from "typeorm";
-import { v4 as uuidv4 } from "uuid";
-import { User } from "./user.entity";
+import { Field, InputType, ObjectType } from '@nestjs/graphql';
+import { IsString } from 'class-validator';
+import { CoreEntity } from 'src/common/entities/core.entity';
+import { BeforeInsert, Column, Entity, JoinColumn, OneToOne } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
+import { User } from './user.entity';
 
 @InputType({ isAbstract: true })
 @ObjectType()
@@ -14,12 +14,14 @@ export class Verification extends CoreEntity {
   @IsString()
   code: string;
 
-  @OneToOne(() => User, {onDelete: 'CASCADE'})
+  @OneToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn()
-  user: User
+  user: User;
 
   @BeforeInsert()
   createCode(): void {
-    this.code = uuidv4().replace(/-/g, '').slice(0, 6);
+    this.code = uuidv4()
+      .replace(/-/g, '')
+      .slice(0, 6);
   }
 }

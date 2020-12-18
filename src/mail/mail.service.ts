@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import * as FormData from "form-data";
+import * as FormData from 'form-data';
 import got from 'got';
 import { CONFIG_OPTIONS } from 'src/common/common.constants';
 import { MailModuleOptions, SendMailOptions } from './mail.interfaces';
@@ -11,24 +11,34 @@ export class MailService {
   ) {
     // this.sendEmail('joseonghwan3021@gmail.com', 'Test Verifing Email', 'Test Verifing Email');
   }
-  
-  private async sendEmail({to, subject, template, emailVars}: SendMailOptions) {
+
+  private async sendEmail({
+    to,
+    subject,
+    template,
+    emailVars,
+  }: SendMailOptions) {
     const form = new FormData();
-    form.append("from", `Admin from Nuber Eats <mailgun@${this.options.domain}>`);
-    form.append('to', to)
+    form.append(
+      'from',
+      `Admin from Nuber Eats <mailgun@${this.options.domain}>`,
+    );
+    form.append('to', to);
     form.append('subject', subject);
     form.append('template', template);
-    emailVars.forEach(emailVar => form.append(emailVar.key, emailVar.value));
+    emailVars.forEach((emailVar) => form.append(emailVar.key, emailVar.value));
     try {
       await got(`https://api.mailgun.net/v3/${this.options.domain}/messages`, {
         headers: {
-          "Authorization": `Basic ${Buffer.from(`api:${this.options.apiKey}`).toString('base64')}`
+          Authorization: `Basic ${Buffer.from(
+            `api:${this.options.apiKey}`,
+          ).toString('base64')}`,
         },
         method: 'POST',
-        body: form
+        body: form,
       });
-    } catch(error) {
-      console.error(error)
+    } catch (error) {
+      console.error(error);
     }
   }
 
@@ -37,7 +47,10 @@ export class MailService {
       to: email,
       subject: 'Verify You Email',
       template: this.options.verifyTemplate,
-      emailVars: [{"key": "v:username", "value": email}, {"key": "v:code", 'value': code}]
-    })
+      emailVars: [
+        { key: 'v:username', value: email },
+        { key: 'v:code', value: code },
+      ],
+    });
   }
 }

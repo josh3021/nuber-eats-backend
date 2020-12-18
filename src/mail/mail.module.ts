@@ -4,7 +4,7 @@ import { MailModuleOptions } from './mail.interfaces';
 import { MailService } from './mail.service';
 
 @Module({
-  providers: [MailService]
+  providers: [MailService],
 })
 @Global()
 export class MailModule {
@@ -17,9 +17,8 @@ export class MailModule {
           provide: CONFIG_OPTIONS, //constant value
           useValue: options,
         },
-        MailService
+        MailService,
       ],
     };
   }
 }
-

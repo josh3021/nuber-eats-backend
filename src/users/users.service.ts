@@ -3,11 +3,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { MailService } from 'src/mail/mail.service';
 import { Repository } from 'typeorm';
 import { JwtService } from '../jwt/jwt.service';
-import { CreateAccountInput, CreateAccountOutput } from './dtos/create-account.dto';
+import {
+  CreateAccountInput,
+  CreateAccountOutput,
+} from './dtos/create-account.dto';
 import { DeleteAccountOutput } from './dtos/delete-account.dto';
 import { LoginInput, LoginOutput } from './dtos/login.dto';
-import { UpdateAccountInput, UpdateAccountOutput } from './dtos/update-profile.dto';
-import { UserProfileOutput } from './dtos/user-profile.dto';
+import {
+  UpdateAccountInput,
+  UpdateAccountOutput,
+} from './dtos/update-profile.dto';
+import { UserAccountOutput } from './dtos/user-profile.dto';
 import { VerifyEmailOutput } from './dtos/verify-email.dto';
 import { User } from './entities/user.entity';
 import { Verification } from './entities/verification.entity';
@@ -16,7 +22,8 @@ import { Verification } from './entities/verification.entity';
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
-    @InjectRepository(Verification) private readonly verifications: Repository<Verification>,
+    @InjectRepository(Verification)
+    private readonly verifications: Repository<Verification>,
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
   ) {}
@@ -27,9 +34,12 @@ export class UsersService {
     role,
   }: CreateAccountInput): Promise<CreateAccountOutput> {
     try {
-      const existingUser = await this.users.findOne({
-        email,
-      }, {select: ['password']});
+      const existingUser = await this.users.findOne(
+        {
+          email,
+        },
+        { select: ['password'] },
+      );
       if (existingUser) {
         // make an error
         return {
@@ -37,41 +47,54 @@ export class UsersService {
           error: 'There is an user with that email already',
         };
       }
-      const user = await this.users.save(this.users.create({ email, password, role }));
-      const verification = await this.verifications.save(this.verifications.create({
-        user
-      }));
-      await this.mailService.sendVerificationEmail(user.email, verification.code);
+      const user = await this.users.save(
+        this.users.create({ email, password, role }),
+      );
+      const verification = await this.verifications.save(
+        this.verifications.create({
+          user,
+        }),
+      );
+      await this.mailService.sendVerificationEmail(
+        user.email,
+        verification.code,
+      );
       return { result: true };
-    } catch (e) {
-      return { result: false, error: `Could'nt create user: ${e}` };
+    } catch (error) {
+      // Create Log system later...
+      console.error(error);
+      return { result: false, error: 'Could not create an account.' };
     }
   }
 
-  async updateAccount(id: number, {email, password}
-  : UpdateAccountInput): Promise<UpdateAccountOutput> {
+  async updateAccount(
+    id: number,
+    { email, password }: UpdateAccountInput,
+  ): Promise<UpdateAccountOutput> {
     try {
-      const user = await this.users.findOne({id});
+      const user = await this.users.findOne({ id });
       if (email) {
         user.email = email;
         user.verified = false;
-        const verification = await this.verifications.save(this.verifications.create({
-          user
-        }));
+        const verification = await this.verifications.save(
+          this.verifications.create({
+            user,
+          }),
+        );
         await this.mailService.sendVerificationEmail(email, verification.code);
       }
       if (password) {
         user.password = password;
       }
-      await this.users.save(user)
+      await this.users.save(user);
       return {
-        result: true
-      }
+        result: true,
+      };
     } catch (error) {
       return {
         result: false,
-        error
-      }
+        error,
+      };
     }
   }
 
@@ -79,15 +102,15 @@ export class UsersService {
     try {
       await this.users.delete(id);
       return {
-        result: true
-      }
+        result: true,
+      };
     } catch (error) {
       return {
         result: false,
-        error
-      }
+        error,
+      };
     }
-  } 
+  }
   /**
    *
    * @param {email, password}
@@ -97,7 +120,10 @@ export class UsersService {
    */
   async login({ email, password }: LoginInput): Promise<LoginOutput> {
     try {
-      const user = await this.users.findOne({ email }, {select: ['id', 'password']});
+      const user = await this.users.findOne(
+        { email },
+        { select: ['id', 'password'] },
+      );
       if (!user) {
         return {
           result: false,
@@ -120,39 +146,42 @@ export class UsersService {
     }
   }
 
-  async findById(id: number): Promise<UserProfileOutput> {
+  async findById(id: number): Promise<UserAccountOutput> {
     try {
       const user = await this.users.findOne({ id });
       if (!user) {
-        throw Error('Cannot find User')
+        throw Error('Cannot find User');
       }
       return {
         result: true,
-        user
-      }
+        user,
+      };
     } catch (error) {
       return {
         result: false,
-        error
-      }
+        error,
+      };
     }
   }
 
   async verifyEmail(code: string): Promise<VerifyEmailOutput> {
     try {
-      const verification = await this.verifications.findOne({code}, {relations: ['user']});
+      const verification = await this.verifications.findOne(
+        { code },
+        { relations: ['user'] },
+      );
       if (verification) {
         verification.user.verified = true;
         await this.users.save(verification.user);
-        await this.verifications.delete(verification.id)
-        return {result: true};
+        await this.verifications.delete(verification.id);
+        return { result: true };
       }
-      throw new Error('Cannot find Verification')
+      throw new Error('Cannot find Verification');
     } catch (error) {
       return {
         result: false,
-        error
-      }
+        error,
+      };
     }
   }
 }

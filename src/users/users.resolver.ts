@@ -5,12 +5,15 @@ import { AuthUser } from 'src/auth/auth-user.decorator';
 import { AuthGuard } from 'src/auth/auth.guard';
 import {
   CreateAccountInput,
-  CreateAccountOutput
+  CreateAccountOutput,
 } from './dtos/create-account.dto';
 import { DeleteAccountOutput } from './dtos/delete-account.dto';
 import { LoginInput, LoginOutput } from './dtos/login.dto';
-import { UpdateAccountInput, UpdateAccountOutput } from './dtos/update-profile.dto';
-import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
+import {
+  UpdateAccountInput,
+  UpdateAccountOutput,
+} from './dtos/update-profile.dto';
+import { UserAccountInput, UserAccountOutput } from './dtos/user-profile.dto';
 import { VerifyEmailInput, VerifyEmailOutput } from './dtos/verify-email.dto';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
@@ -24,10 +27,12 @@ export class UsersResolver {
     return authorizedUser;
   }
 
-  @Query(() => UserProfileOutput)
+  @Query(() => UserAccountOutput)
   @UseGuards(AuthGuard)
-  userProfile(@Args() userProfileInput: UserProfileInput): Promise<UserProfileOutput> {
-    return this.usersService.findById(userProfileInput.id);
+  userAccount(
+    @Args() userAccountInput: UserAccountInput,
+  ): Promise<UserAccountOutput> {
+    return this.usersService.findById(userAccountInput.id);
   }
 
   @Mutation(() => LoginOutput)
@@ -44,8 +49,14 @@ export class UsersResolver {
 
   @Mutation(() => UpdateAccountOutput)
   @UseGuards(AuthGuard)
-  updateAccount(@AuthUser() authorizedUser, @Args('input') updateAccountInput: UpdateAccountInput): Promise<UpdateAccountOutput> {
-    return this.usersService.updateAccount(authorizedUser['id'], updateAccountInput);
+  updateAccount(
+    @AuthUser() authorizedUser,
+    @Args('input') updateAccountInput: UpdateAccountInput,
+  ): Promise<UpdateAccountOutput> {
+    return this.usersService.updateAccount(
+      authorizedUser['id'],
+      updateAccountInput,
+    );
   }
 
   @Mutation(() => DeleteAccountOutput)
@@ -55,7 +66,9 @@ export class UsersResolver {
   }
 
   @Mutation(() => VerifyEmailOutput)
-  verifyEmail(@Args('input') verifyEmailInput: VerifyEmailInput): Promise<VerifyEmailOutput> {
+  verifyEmail(
+    @Args('input') verifyEmailInput: VerifyEmailInput,
+  ): Promise<VerifyEmailOutput> {
     return this.usersService.verifyEmail(verifyEmailInput.code);
   }
 }

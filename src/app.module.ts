@@ -2,7 +2,7 @@ import {
   MiddlewareConsumer,
   Module,
   NestModule,
-  RequestMethod
+  RequestMethod,
 } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
@@ -24,7 +24,8 @@ import { UsersModule } from './users/users.module';
       envFilePath: matchEnvFile(process.env.NODE_ENV),
       ignoreEnvFile: process.env.NODE_ENV === 'prod',
       validationSchema: joi.object({
-        NODE_ENV: joi.string()
+        NODE_ENV: joi
+          .string()
           .valid('dev', 'test', 'prod')
           .required(),
         DB_HOST: joi.string().required(),
@@ -35,13 +36,16 @@ import { UsersModule } from './users/users.module';
         PRIVATE_KEY: joi.string().required(),
         MAILGUN_API_KEY: joi.string().required(),
         MAILGUN_DOMAIN_NAME: joi.string().required(),
-        MAILGUN_FROM_EMAIL: joi.string().email().required(),
-        MAILGUN_EMAIL_VERIFY_TEMPLATE: joi.string().required()
+        MAILGUN_FROM_EMAIL: joi
+          .string()
+          .email()
+          .required(),
+        MAILGUN_EMAIL_VERIFY_TEMPLATE: joi.string().required(),
       }),
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
-      context: ({req}) => ({user: req['user']})
+      context: ({ req }) => ({ user: req['user'] }),
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -65,7 +69,7 @@ import { UsersModule } from './users/users.module';
       apiKey: process.env.MAILGUN_API_KEY,
       domain: process.env.MAILGUN_DOMAIN_NAME,
       fromEmail: process.env.MAILGUN_FROM_EMAIL,
-      verifyTemplate: process.env.MAILGUN_EMAIL_VERIFY_TEMPLATE
+      verifyTemplate: process.env.MAILGUN_EMAIL_VERIFY_TEMPLATE,
     }),
     UsersModule,
   ],

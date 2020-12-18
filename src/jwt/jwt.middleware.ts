@@ -6,7 +6,10 @@ import { JwtService } from './jwt.service';
 
 @Injectable()
 export class JwtMiddleware implements NestMiddleware {
-  constructor(private readonly jwtSerivce: JwtService, private readonly usersService: UsersService) {}
+  constructor(
+    private readonly jwtSerivce: JwtService,
+    private readonly usersService: UsersService,
+  ) {}
   async use(req: Request, res: Response, next: NextFunction) {
     if (LOGIN_TOKEN in req.headers) {
       const token = req.headers[LOGIN_TOKEN];
@@ -15,7 +18,7 @@ export class JwtMiddleware implements NestMiddleware {
         try {
           const user = await this.usersService.findById(verified['id']);
           req['user'] = user;
-        } catch(e) {
+        } catch (e) {
           console.error(e);
         }
       }
@@ -23,4 +26,3 @@ export class JwtMiddleware implements NestMiddleware {
     next();
   }
 }
-
