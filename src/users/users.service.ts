@@ -28,6 +28,7 @@ export class UsersService {
     private readonly mailService: MailService,
   ) {}
 
+  // Test Verifed
   async createAccount({
     email,
     password,
@@ -44,7 +45,7 @@ export class UsersService {
         // make an error
         return {
           result: false,
-          error: 'There is an user with that email already',
+          error: 'There is an user with that email already.',
         };
       }
       const user = await this.users.save(
@@ -62,8 +63,10 @@ export class UsersService {
       return { result: true };
     } catch (error) {
       // Create Log system later...
-      console.error(error);
-      return { result: false, error: 'Could not create an account.' };
+      return {
+        result: false,
+        error: `Could not create an account. ${error}`,
+      };
     }
   }
 
@@ -72,6 +75,7 @@ export class UsersService {
     { email, password }: UpdateAccountInput,
   ): Promise<UpdateAccountOutput> {
     try {
+      // id는 JWT에서 자신의 ID를 받아오는 것이기 때문에 오류가 날 수 없음. Test will be skipped :)
       const user = await this.users.findOne({ id });
       if (email) {
         user.email = email;
@@ -81,7 +85,10 @@ export class UsersService {
             user,
           }),
         );
-        await this.mailService.sendVerificationEmail(email, verification.code);
+        await this.mailService.sendVerificationEmail(
+          user.email,
+          verification.code,
+        );
       }
       if (password) {
         user.password = password;
@@ -93,7 +100,7 @@ export class UsersService {
     } catch (error) {
       return {
         result: false,
-        error,
+        error: `Could not update user. ${error}`,
       };
     }
   }
@@ -107,7 +114,7 @@ export class UsersService {
     } catch (error) {
       return {
         result: false,
-        error,
+        error: `Could not delete user. ${error}`,
       };
     }
   }
@@ -118,6 +125,7 @@ export class UsersService {
    * 2. check if the password is correct
    * 3. make a JWT and give it to the user
    */
+  // Test Verified
   async login({ email, password }: LoginInput): Promise<LoginOutput> {
     try {
       const user = await this.users.findOne(
@@ -127,14 +135,14 @@ export class UsersService {
       if (!user) {
         return {
           result: false,
-          error: 'User not found',
+          error: 'User does not found.',
         };
       }
 
       if (!(await user.checkPassword(password))) {
         return {
           result: false,
-          error: 'Wrong password!',
+          error: 'The password does not match.',
         };
       }
       return {
@@ -142,15 +150,19 @@ export class UsersService {
         token: this.jwtService.sign({ id: user.id }),
       };
     } catch (e) {
-      return { result: false, error: `Could'nt login: ${e}` };
+      return { result: false, error: `Could not login. ${e}` };
     }
   }
 
+  // Test Verified
   async findById(id: number): Promise<UserAccountOutput> {
     try {
       const user = await this.users.findOne({ id });
       if (!user) {
-        throw Error('Cannot find User');
+        return {
+          result: false,
+          error: `Could not find user have id: ${id}`,
+        };
       }
       return {
         result: true,
@@ -159,7 +171,7 @@ export class UsersService {
     } catch (error) {
       return {
         result: false,
-        error,
+        error: `Could not find user. ${error}`,
       };
     }
   }
@@ -176,11 +188,11 @@ export class UsersService {
         await this.verifications.delete(verification.id);
         return { result: true };
       }
-      throw new Error('Cannot find Verification');
+      throw new Error('Cannot find Verification.');
     } catch (error) {
       return {
         result: false,
-        error,
+        error: `Could not verify user. ${error}`,
       };
     }
   }

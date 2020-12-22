@@ -8,7 +8,7 @@ import { RestaurantsService } from './restaurants.service';
 export class RestaurantsResolver {
   constructor(private readonly restaurantsService: RestaurantsService) {}
   @Query(() => [Restaurant])
-  restaurants(@Args('veganOnly') veganOnly: boolean): Promise<Restaurant[]> {
+  restaurants(): Promise<Restaurant[]> {
     return this.restaurantsService.getAll();
   }
 
