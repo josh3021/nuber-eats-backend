@@ -80,6 +80,7 @@ export class UsersService {
       if (email) {
         user.email = email;
         user.verified = false;
+        await this.verifications.delete({ user: { id: user.id } });
         const verification = await this.verifications.save(
           this.verifications.create({
             user,
@@ -142,7 +143,7 @@ export class UsersService {
       if (!(await user.checkPassword(password))) {
         return {
           result: false,
-          error: 'The password does not match.',
+          error: 'Password does not match.',
         };
       }
       return {

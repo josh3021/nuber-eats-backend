@@ -62,7 +62,7 @@ export class UsersResolver {
   @Mutation(() => DeleteAccountOutput)
   @UseGuards(AuthGuard)
   deleteAccount(@AuthUser() authorizedUser): Promise<DeleteAccountOutput> {
-    return this.usersService.deleteAccount(authorizedUser.user['id']);
+    return this.usersService.deleteAccount(authorizedUser['id']);
   }
 
   @Mutation(() => VerifyEmailOutput)

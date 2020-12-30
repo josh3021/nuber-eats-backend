@@ -289,7 +289,7 @@ describe('UsersService', () => {
       const result = await service.login(loginArgs);
       expect(result).toMatchObject({
         result: false,
-        error: 'The password does not match.',
+        error: 'Password does not match.',
       });
     });
 

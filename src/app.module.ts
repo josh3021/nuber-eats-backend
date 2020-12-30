@@ -56,7 +56,8 @@ import { UsersModule } from './users/users.module';
       database: process.env.DB_NAME,
       entities: [User, Verification],
       synchronize: process.env.NODE_ENV !== 'prod',
-      logging: process.env.NODE_ENV !== 'prod',
+      logging:
+        process.env.NODE_ENV !== 'prod' && process.env.NODE_ENV !== 'test',
     }),
     // Actually, you can just inject privateKey Object By Global Config Modules...
     // And I Recommend the Global Configuration Way one,
