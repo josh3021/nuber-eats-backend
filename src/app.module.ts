@@ -9,10 +9,14 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as joi from 'joi';
 import { AuthModule } from './auth/auth.module';
+import { CommonModule } from './common/common.module';
 import { matchEnvFile } from './config/dotenv';
 import { JwtMiddleware } from './jwt/jwt.middleware';
 import { JwtModule } from './jwt/jwt.module';
 import { MailModule } from './mail/mail.module';
+import { Category } from './restaurants/entities/category.entity';
+import { Restaurant } from './restaurants/entities/restaurant.entity';
+import { RestaurantsModule } from './restaurants/restaurants.module';
 import { User } from './users/entities/user.entity';
 import { Verification } from './users/entities/verification.entity';
 import { UsersModule } from './users/users.module';
@@ -54,7 +58,7 @@ import { UsersModule } from './users/users.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [User, Verification],
+      entities: [User, Verification, Restaurant, Category],
       synchronize: process.env.NODE_ENV !== 'prod',
       logging:
         process.env.NODE_ENV !== 'prod' && process.env.NODE_ENV !== 'test',
@@ -62,6 +66,7 @@ import { UsersModule } from './users/users.module';
     // Actually, you can just inject privateKey Object By Global Config Modules...
     // And I Recommend the Global Configuration Way one,
     // But, I will use this way, because it's for practice of making My Own Dynamic Module!
+    CommonModule.forRoot(),
     JwtModule.forRoot({
       privateKey: process.env.PRIVATE_KEY,
     }),
@@ -72,7 +77,9 @@ import { UsersModule } from './users/users.module';
       fromEmail: process.env.MAILGUN_FROM_EMAIL,
       verifyTemplate: process.env.MAILGUN_EMAIL_VERIFY_TEMPLATE,
     }),
+    AuthModule,
     UsersModule,
+    RestaurantsModule,
   ],
   controllers: [],
   providers: [],

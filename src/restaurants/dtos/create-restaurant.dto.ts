@@ -1,6 +1,16 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { InputType, OmitType } from '@nestjs/graphql';
+import { Field, InputType, ObjectType, PickType } from '@nestjs/graphql';
+import { CoreOutput } from '../../common/dtos/output.dto';
 import { Restaurant } from '../entities/restaurant.entity';
 
 @InputType()
-export class CreateRestaurantDto extends OmitType(Restaurant, ['id']) {}
+export class CreateRestaurantInput extends PickType(Restaurant, [
+  'name',
+  'address',
+  'coverImage',
+]) {
+  @Field(() => String)
+  categoryName: string;
+}
+
+@ObjectType()
+export class CreateRestaurantOutput extends CoreOutput {}

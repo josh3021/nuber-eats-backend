@@ -1,17 +1,17 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { Field, InputType, PartialType } from '@nestjs/graphql';
-import { CreateRestaurantDto } from './create-restaurant.dto';
-
+import {
+  Field,
+  InputType,
+  Int,
+  ObjectType,
+  PartialType,
+} from '@nestjs/graphql';
+import { CoreOutput } from '../../common/dtos/output.dto';
+import { CreateRestaurantInput } from './create-restaurant.dto';
 @InputType()
-export class UpdateRestaurantInputType extends PartialType(
-  CreateRestaurantDto,
-) {}
-
-@InputType()
-export class UpdateRestaurantDto {
-  @Field((_type) => Number)
-  id: number;
-
-  @Field((_type) => UpdateRestaurantInputType)
-  data: UpdateRestaurantInputType;
+export class UpdateRestaurantInput extends PartialType(CreateRestaurantInput) {
+  @Field(() => Int)
+  restaurantId: number;
 }
+
+@ObjectType()
+export class UpdateRestaurantOutput extends CoreOutput {}

@@ -12,7 +12,7 @@ import { LoginInput, LoginOutput } from './dtos/login.dto';
 import {
   UpdateAccountInput,
   UpdateAccountOutput,
-} from './dtos/update-profile.dto';
+} from './dtos/update-account.dto';
 import { UserAccountOutput } from './dtos/user-profile.dto';
 import { VerifyEmailOutput } from './dtos/verify-email.dto';
 import { User } from './entities/user.entity';

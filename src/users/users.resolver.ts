@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { AuthUser } from 'src/auth/auth-user.decorator';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { Role } from '../auth/role.decorator';
 import {
   CreateAccountInput,
   CreateAccountOutput,
@@ -12,7 +10,7 @@ import { LoginInput, LoginOutput } from './dtos/login.dto';
 import {
   UpdateAccountInput,
   UpdateAccountOutput,
-} from './dtos/update-profile.dto';
+} from './dtos/update-account.dto';
 import { UserAccountInput, UserAccountOutput } from './dtos/user-profile.dto';
 import { VerifyEmailInput, VerifyEmailOutput } from './dtos/verify-email.dto';
 import { User } from './entities/user.entity';
@@ -22,13 +20,13 @@ export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
 
   @Query(() => User)
-  @UseGuards(AuthGuard)
+  @Role(['Any'])
   me(@AuthUser() authorizedUser: User): User {
     return authorizedUser;
   }
 
   @Query(() => UserAccountOutput)
-  @UseGuards(AuthGuard)
+  @Role(['Any'])
   userAccount(
     @Args() userAccountInput: UserAccountInput,
   ): Promise<UserAccountOutput> {
@@ -48,7 +46,7 @@ export class UsersResolver {
   }
 
   @Mutation(() => UpdateAccountOutput)
-  @UseGuards(AuthGuard)
+  @Role(['Any'])
   updateAccount(
     @AuthUser() authorizedUser,
     @Args('input') updateAccountInput: UpdateAccountInput,
@@ -60,7 +58,7 @@ export class UsersResolver {
   }
 
   @Mutation(() => DeleteAccountOutput)
-  @UseGuards(AuthGuard)
+  @Role(['Any'])
   deleteAccount(@AuthUser() authorizedUser): Promise<DeleteAccountOutput> {
     return this.usersService.deleteAccount(authorizedUser['id']);
   }
