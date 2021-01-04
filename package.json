@@ -93,6 +93,9 @@
       ".constants.ts",
       ".dto.ts"
     ],
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "transformIgnorePatterns": [
+      "./node_modules"
+    ]
   }
 }

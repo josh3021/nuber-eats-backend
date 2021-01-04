@@ -9,6 +9,7 @@ import { compare, hash } from 'bcrypt';
 import { IsBoolean, IsEmail, IsEnum, IsString } from 'class-validator';
 import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany } from 'typeorm';
 import { CoreEntity } from '../../common/entities/core.entity';
+import { Order } from '../../orders/entities/order.entity';
 import { Restaurant } from '../../restaurants/entities/restaurant.entity';
 import { UserRole } from '../dtos/role.dto';
 
@@ -47,6 +48,26 @@ export class User extends CoreEntity {
   )
   @Field(() => [Restaurant])
   restaurants: Restaurant[];
+
+  @OneToMany(
+    () => Order,
+    (order) => order.customer,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
+  @Field(() => [Order])
+  orders: Order[];
+
+  @OneToMany(
+    () => Order,
+    (order) => order.driver,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
+  @Field(() => [Order])
+  rides: Order[];
 
   @BeforeInsert()
   @BeforeUpdate()
