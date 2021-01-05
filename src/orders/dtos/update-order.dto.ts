@@ -6,3 +6,6 @@ export class UpdateOrderInput extends PickType(Order, ['id', 'status']) {}
 
 @ObjectType()
 export class UpdateOrderOutput extends CoreOutput {}
+
+@InputType()
+export class UpdateOrderPubSubInput extends PickType(Order, ['id']) {}

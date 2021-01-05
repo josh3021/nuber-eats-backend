@@ -1,1 +1,1 @@
-export const LOGIN_TOKEN = 'x-jwt'; // JSON User Authentication Token
+export const AUTH_TOKEN = 'authorization'; // JSON User Authentication Token

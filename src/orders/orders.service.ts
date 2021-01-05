@@ -1,6 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PubSub } from 'graphql-subscriptions';
 import { Repository } from 'typeorm';
+import {
+  NEW_COOKED_ORDER,
+  NEW_PENDING_ORDER,
+  NEW_UPDATED_ORDER,
+  PUB_SUB,
+} from '../common/pubsub.constants';
 import { Dish } from '../restaurants/entities/dish.entity';
 import { Restaurant } from '../restaurants/entities/restaurant.entity';
 import { UserRole } from '../users/dtos/role.dto';
@@ -8,6 +15,7 @@ import { User } from '../users/entities/user.entity';
 import { CreateOrderInput, CreateOrderOutput } from './dtos/create-order.dto';
 import { OrderInput, OrderOutput, OrderStatus } from './dtos/order.dto';
 import { OrdersInput, OrdersOutput } from './dtos/orders.dto';
+import { TakeOrderInput, TakeOrderOutput } from './dtos/take-order.dto';
 import { UpdateOrderInput, UpdateOrderOutput } from './dtos/update-order.dto';
 import { OrderItem } from './entities/order-item.entity';
 import { Order } from './entities/order.entity';
@@ -20,13 +28,12 @@ export class OrdersService {
     @InjectRepository(Restaurant)
     private readonly restaurants: Repository<Restaurant>,
     @InjectRepository(Dish) private readonly dishes: Repository<Dish>,
+    @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
 
   async getOrder(user: User, { orderId }: OrderInput): Promise<OrderOutput> {
     try {
-      const order = await this.orders.findOne(orderId, {
-        relations: ['restaurant'],
-      });
+      const order = await this.orders.findOne(orderId);
       if (!order) {
         return {
           result: false,
@@ -157,7 +164,7 @@ export class OrdersService {
         );
         orderItems.push(orderItem);
       }
-      await this.orders.save(
+      const order = await this.orders.save(
         this.orders.create({
           customer,
           restaurant,
@@ -165,6 +172,9 @@ export class OrdersService {
           items: orderItems,
         }),
       );
+      await this.pubSub.publish(NEW_PENDING_ORDER, {
+        pendingOrder: { order, ownerId: restaurant.ownerId },
+      });
       return {
         result: true,
       };
@@ -181,9 +191,7 @@ export class OrdersService {
     { id: orderId, status }: UpdateOrderInput,
   ): Promise<UpdateOrderOutput> {
     try {
-      const order = await this.orders.findOne(orderId, {
-        relations: ['restaurant'],
-      });
+      const order = await this.orders.findOne(orderId);
       if (!order) {
         return {
           result: false,
@@ -222,9 +230,19 @@ export class OrdersService {
           error: "You don't have permission to see this order.",
         };
       }
+      // owner이면서, Cooking || Cooked, Delivery이면서, PickedUp || Delivered
 
-      await this.orders.update(orderId, {
-        status,
+      order.status = status;
+      await this.orders.save(order);
+
+      if (user.role === UserRole.Owner && status === OrderStatus.Cooked) {
+        await this.pubSub.publish(NEW_COOKED_ORDER, {
+          cookedOrder: order,
+        });
+      }
+
+      await this.pubSub.publish(NEW_UPDATED_ORDER, {
+        updatedOrder: order,
       });
 
       return {
@@ -234,6 +252,42 @@ export class OrdersService {
       return {
         result: false,
         error: `Could not update order. ${error}`,
+      };
+    }
+  }
+
+  async takeOrder(
+    user: User,
+    { id: orderId }: TakeOrderInput,
+  ): Promise<TakeOrderOutput> {
+    try {
+      const order = await this.orders.findOne(orderId);
+      if (!order) {
+        return {
+          result: false,
+          error: 'Order not found.',
+        };
+      }
+      if (order.driver) {
+        return {
+          result: false,
+          error: 'Sorry... Order already has been taken.',
+        };
+      }
+      order.driver = user;
+      order.status = OrderStatus.PickedUp;
+      await this.orders.save(order);
+
+      await this.pubSub.publish(NEW_UPDATED_ORDER, {
+        updatedOrder: order,
+      });
+      return {
+        result: true,
+      };
+    } catch (error) {
+      return {
+        result: false,
+        error: `Could not take order. ${error}`,
       };
     }
   }

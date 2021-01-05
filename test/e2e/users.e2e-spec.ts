@@ -206,7 +206,7 @@ describe('UsersModule (e2e)', () => {
     it('should return existing user', () => {
       return request(app.getHttpServer())
         .post(GRAPHQL_ENDPOINT)
-        .set('X-JWT', loginToken)
+        .set('authorization', loginToken)
         .send({
           query: `
             {
@@ -244,7 +244,7 @@ describe('UsersModule (e2e)', () => {
     it('should FAIL when user does not exists', () => {
       return request(app.getHttpServer())
         .post(GRAPHQL_ENDPOINT)
-        .set('X-JWT', loginToken)
+        .set('authorization', loginToken)
         .send({
           query: `
             {
@@ -277,7 +277,7 @@ describe('UsersModule (e2e)', () => {
     it('should return me', () => {
       return request(app.getHttpServer())
         .post(GRAPHQL_ENDPOINT)
-        .set('X-JWT', loginToken)
+        .set('authorization', loginToken)
         .send({
           query: `
             {
@@ -336,7 +336,7 @@ describe('UsersModule (e2e)', () => {
     it('should change email', () => {
       return request(app.getHttpServer())
         .post(GRAPHQL_ENDPOINT)
-        .set('X-JWT', loginToken)
+        .set('authorization', loginToken)
         .send({
           query: `
             mutation {
@@ -364,7 +364,7 @@ describe('UsersModule (e2e)', () => {
     it('should return updated account', () => {
       return request(app.getHttpServer())
         .post(GRAPHQL_ENDPOINT)
-        .set('X-JWT', loginToken)
+        .set('authorization', loginToken)
         .send({
           query: `
                 {
@@ -462,7 +462,7 @@ describe('UsersModule (e2e)', () => {
     it('should delete account', () => {
       return request(app.getHttpServer())
         .post(GRAPHQL_ENDPOINT)
-        .set('X-JWT', loginToken)
+        .set('authorization', loginToken)
         .send({
           query: `
             mutation {

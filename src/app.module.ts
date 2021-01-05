@@ -1,9 +1,4 @@
-import {
-  MiddlewareConsumer,
-  Module,
-  NestModule,
-  RequestMethod,
-} from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -11,7 +6,7 @@ import * as joi from 'joi';
 import { AuthModule } from './auth/auth.module';
 import { CommonModule } from './common/common.module';
 import { matchEnvFile } from './config/dotenv';
-import { JwtMiddleware } from './jwt/jwt.middleware';
+import { AUTH_TOKEN } from './jwt/jwt.constants';
 import { JwtModule } from './jwt/jwt.module';
 import { MailModule } from './mail/mail.module';
 import { OrderItem } from './orders/entities/order-item.entity';
@@ -53,7 +48,10 @@ import { UsersModule } from './users/users.module';
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
-      context: ({ req }) => ({ user: req['user'] }),
+      context: ({ req, connection }) => ({
+        token: req ? req.headers[AUTH_TOKEN] : connection.context[AUTH_TOKEN],
+      }),
+      installSubscriptionHandlers: true,
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -97,11 +95,12 @@ import { UsersModule } from './users/users.module';
   controllers: [],
   providers: [],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(JwtMiddleware).forRoutes({
-      path: '/graphql',
-      method: RequestMethod.POST,
-    });
-  }
-}
+// export class AppModule implements NestModule {
+//   configure(consumer: MiddlewareConsumer) {
+//     consumer.apply(JwtMiddleware).forRoutes({
+//       path: '/graphql',
+//       method: RequestMethod.POST,
+//     });
+//   }
+// }
+export class AppModule {}
