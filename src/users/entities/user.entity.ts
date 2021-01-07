@@ -10,6 +10,7 @@ import { IsBoolean, IsEmail, IsEnum, IsString } from 'class-validator';
 import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany } from 'typeorm';
 import { CoreEntity } from '../../common/entities/core.entity';
 import { Order } from '../../orders/entities/order.entity';
+import { Payment } from '../../payments/entites/payment.entity';
 import { Restaurant } from '../../restaurants/entities/restaurant.entity';
 import { UserRole } from '../dtos/role.dto';
 
@@ -44,30 +45,44 @@ export class User extends CoreEntity {
     (restaurant) => restaurant.owner,
     {
       onDelete: 'CASCADE',
+      nullable: true,
     },
   )
-  @Field(() => [Restaurant])
-  restaurants: Restaurant[];
+  @Field(() => [Restaurant], { nullable: true })
+  restaurants?: Restaurant[];
 
   @OneToMany(
     () => Order,
     (order) => order.customer,
     {
       onDelete: 'CASCADE',
+      nullable: true,
     },
   )
-  @Field(() => [Order])
-  orders: Order[];
+  @Field(() => [Order], { nullable: true })
+  orders?: Order[];
+
+  @OneToMany(
+    () => Payment,
+    (payment) => payment.user,
+    {
+      onDelete: 'CASCADE',
+      nullable: true,
+    },
+  )
+  @Field(() => [Payment], { nullable: true })
+  payments?: Payment[];
 
   @OneToMany(
     () => Order,
     (order) => order.driver,
     {
       onDelete: 'CASCADE',
+      nullable: true,
     },
   )
-  @Field(() => [Order])
-  rides: Order[];
+  @Field(() => [Order], { nullable: true })
+  rides?: Order[];
 
   @BeforeInsert()
   @BeforeUpdate()

@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
+import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as joi from 'joi';
 import { AuthModule } from './auth/auth.module';
@@ -12,6 +13,8 @@ import { MailModule } from './mail/mail.module';
 import { OrderItem } from './orders/entities/order-item.entity';
 import { Order } from './orders/entities/order.entity';
 import { OrdersModule } from './orders/orders.module';
+import { Payment } from './payments/entites/payment.entity';
+import { PaymentsModule } from './payments/payments.module';
 import { Category } from './restaurants/entities/category.entity';
 import { Dish } from './restaurants/entities/dish.entity';
 import { Restaurant } from './restaurants/entities/restaurant.entity';
@@ -68,11 +71,13 @@ import { UsersModule } from './users/users.module';
         Dish,
         Order,
         OrderItem,
+        Payment,
       ],
       synchronize: process.env.NODE_ENV !== 'prod',
       logging:
         process.env.NODE_ENV !== 'prod' && process.env.NODE_ENV !== 'test',
     }),
+    ScheduleModule.forRoot(),
     // Actually, you can just inject privateKey Object By Global Config Modules...
     // And I Recommend the Global Configuration Way one,
     // But, I will use this way, because it's for practice of making My Own Dynamic Module!
@@ -91,6 +96,7 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     RestaurantsModule,
     OrdersModule,
+    PaymentsModule,
   ],
   controllers: [],
   providers: [],

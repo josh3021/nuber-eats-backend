@@ -77,6 +77,9 @@ export class RestaurantsService {
   }: RestaurantsInput): Promise<RestaurantsOutput> {
     try {
       const [restaurants, totalResults] = await this.restaurants.findAndCount({
+        order: {
+          isPromoted: 'DESC',
+        },
         take,
         skip: this.commonService.getPaginationOffset(page, take),
       });
@@ -104,6 +107,9 @@ export class RestaurantsService {
       const [restaurants, totalResults] = await this.restaurants.findAndCount({
         where: {
           name: ILike(`%${query}%`),
+        },
+        order: {
+          isPromoted: 'DESC',
         },
         skip: this.commonService.getPaginationOffset(page, take),
         take,
@@ -259,6 +265,9 @@ export class RestaurantsService {
       }
       const restaurants = await this.restaurants.find({
         where: { category },
+        order: {
+          isPromoted: 'DESC',
+        },
         take,
         skip: this.commonService.getPaginationOffset(page, take),
       });
