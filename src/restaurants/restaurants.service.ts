@@ -16,6 +16,8 @@ import {
   DeleteRestaurantInput,
   DeleteRestaurantOutput,
 } from './dtos/restaurant/delete-restaurant.dto';
+import { MyRestaurantOutput } from './dtos/restaurant/my-restaurant.dto';
+import { MyRestaurantsOutput } from './dtos/restaurant/my-restaurants.dto';
 import {
   RestaurantInput,
   RestaurantOutput,
@@ -80,6 +82,7 @@ export class RestaurantsService {
         order: {
           isPromoted: 'DESC',
         },
+        relations: ['category'],
         take,
         skip: this.commonService.getPaginationOffset(page, take),
       });
@@ -94,6 +97,55 @@ export class RestaurantsService {
       return {
         result: false,
         error: `Could not load restaurants. ${error}`,
+      };
+    }
+  }
+
+  async myRestaurant(
+    owner: User,
+    { restaurantId: id }: RestaurantInput,
+  ): Promise<MyRestaurantOutput> {
+    try {
+      console.log(typeof id);
+      if (typeof id !== 'number') {
+        return {
+          result: false,
+          error: `Could not load restaurant. Unexpected Request.`,
+        };
+      }
+      const restaurant = await this.restaurants.findOne(
+        { id, owner },
+        {
+          relations: ['menu', 'orders'],
+        },
+      );
+      return {
+        result: true,
+        restaurant,
+      };
+    } catch (error) {
+      return {
+        result: false,
+        error: `Could not load restaurant. ${error}`,
+      };
+    }
+  }
+
+  async myRestaurants(owner: User): Promise<MyRestaurantsOutput> {
+    try {
+      const restaurants = await this.restaurants.find({
+        where: {
+          owner,
+        },
+      });
+      return {
+        result: true,
+        results: restaurants,
+      };
+    } catch (error) {
+      return {
+        result: false,
+        error: `Could not find my restaurants. ${error}`,
       };
     }
   }
@@ -142,6 +194,7 @@ export class RestaurantsService {
       await this.restaurants.save(newRestaurant);
       return {
         result: true,
+        restaurantId: newRestaurant.id,
       };
     } catch (error) {
       return {

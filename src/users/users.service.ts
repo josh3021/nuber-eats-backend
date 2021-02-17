@@ -158,7 +158,7 @@ export class UsersService {
   // Test Verified
   async findById(id: number): Promise<UserAccountOutput> {
     try {
-      const user = await this.users.findOne({ id });
+      const user = await this.users.findOne({ id }, {});
       if (!user) {
         return {
           result: false,
