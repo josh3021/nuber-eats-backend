@@ -19,21 +19,21 @@ import { Category } from './restaurants/entities/category.entity';
 import { Dish } from './restaurants/entities/dish.entity';
 import { Restaurant } from './restaurants/entities/restaurant.entity';
 import { RestaurantsModule } from './restaurants/restaurants.module';
+import { UploadsModule } from './uploads/uploads.module';
 import { User } from './users/entities/user.entity';
 import { Verification } from './users/entities/verification.entity';
 import { UsersModule } from './users/users.module';
-import { UploadsModule } from './uploads/uploads.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: matchEnvFile(process.env.NODE_ENV),
-      ignoreEnvFile: process.env.NODE_ENV === 'prod',
+      ignoreEnvFile: process.env.NODE_ENV === 'production',
       validationSchema: joi.object({
         NODE_ENV: joi
           .string()
-          .valid('dev', 'test', 'prod')
+          .valid('dev', 'test', 'production')
           .required(),
         DB_HOST: joi.string().required(),
         DB_PORT: joi.string().required(),
@@ -74,9 +74,10 @@ import { UploadsModule } from './uploads/uploads.module';
         OrderItem,
         Payment,
       ],
-      synchronize: process.env.NODE_ENV !== 'prod',
+      synchronize: process.env.NODE_ENV !== 'production',
       logging:
-        process.env.NODE_ENV !== 'prod' && process.env.NODE_ENV !== 'test',
+        process.env.NODE_ENV !== 'production' &&
+        process.env.NODE_ENV !== 'test',
     }),
     ScheduleModule.forRoot(),
     // Actually, you can just inject privateKey Object By Global Config Modules...
