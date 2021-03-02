@@ -93,7 +93,7 @@ export class OrdersResolver {
   @Subscription(() => Order, {
     filter: (
       { updatedOrder }: { updatedOrder: Order },
-      { input: { id } }: { input: UpdateOrderPubSubInput },
+      { orderId }: UpdateOrderPubSubInput,
       { user }: { user: User },
     ) => {
       if (
@@ -103,13 +103,11 @@ export class OrdersResolver {
       ) {
         return false;
       }
-      return typeof id === 'number'
-        ? updatedOrder.id === id
-        : updatedOrder.id === parseInt(id);
+      return updatedOrder.id === orderId;
     },
   })
   @Role(['Any'])
-  updatedOrder(@Args('input') updateOrderPubSubInput: UpdateOrderPubSubInput) {
+  updatedOrder(@Args() updateOrderPubSubInput: UpdateOrderPubSubInput) {
     return this.pubSub.asyncIterator(NEW_UPDATED_ORDER);
   }
 }

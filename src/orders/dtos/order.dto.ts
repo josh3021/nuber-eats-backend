@@ -1,10 +1,10 @@
-import { ArgsType, Field, ID, ObjectType } from '@nestjs/graphql';
+import { ArgsType, Field, Int, ObjectType } from '@nestjs/graphql';
 import { CoreOutput } from 'src/common/dtos/output.dto';
 import { Order } from '../entities/order.entity';
 
 @ArgsType()
 export class OrderInput {
-  @Field(() => ID)
+  @Field(() => Int)
   orderId: number;
 }
 
