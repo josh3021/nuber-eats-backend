@@ -74,7 +74,7 @@ import { UsersModule } from './users/users.module';
         OrderItem,
         Payment,
       ],
-      synchronize: process.env.NODE_ENV !== 'production',
+      // synchronize: process.env.NODE_ENV !== 'production',
       logging:
         process.env.NODE_ENV !== 'production' &&
         process.env.NODE_ENV !== 'test',
